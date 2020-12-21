@@ -1,6 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <style>
+    body {
+        background:#b5d0d0;
+        font-family:Arial;
+    }
+    .h1 {
+        color:#285585;
+        padding: 10px
+    }
+
+    #container {
+        margin:10px;
+        padding:10px;
+    }
+
+    .button{
+        font-size: 1em;
+        color: #203354;
+        text-decoration: underline;
+        background-color: transparent;
+        border-style: none;
+        cursor:pointer;
+        padding:3px;
+        text-align: left;
+        display: inline;
+    }
+
+    .off {
+        font-size: 1em;
+        color: #999999;
+        text-decoration: underline;
+        background-color: transparent;
+        border-style: none;
+        cursor:pointer;
+        padding:3px;
+        text-align: left;
+        display: inline;
+    }
+
+    .selected {
+        font-size: 1.1em;
+        text-decoration: underline;
+        background-color: transparent;
+        border-style: none;
+        cursor:pointer;
+        padding:3px;
+        text-align: left;
+        display: inline;
+        font-weight:600;
+        color: #006400;
+    }
+  
+    </style>
+</head>
+<body>
+	
 <header>
   <a href="{% url 'home' %}">Home</a> | <a href="{% url 'about' %}">About</a>
 </header>
 
 {% block content %}
 {% endblock %}
+
+</body>
+</html>

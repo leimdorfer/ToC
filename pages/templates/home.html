@@ -1,5 +1,481 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Homepage</h1>
+
+
+    <h1>Theory of Change</h1>
+
+    <button onclick='reset_the_tree()'; class='button'>Reset</button>
+
+        <table id="container"></table>
+
+    <script>
+
+        function init(){
+
+            // Build the data to start with
+            ToC = toc_data();
+
+            container = document.getElementById("container");
+
+            draw_the_data_tree();
+
+        };   
+
+        function draw_the_data_tree(){
+
+            for(var i=0; i<ToC.length; i++){
+
+                var content_string = "";
+
+                var content_array = ToC[i].content;
+
+                content_string += "<ul>";
+                for(var j=0; j<content_array.length; j++){
+
+                    content_string += "<li><button onclick='filter_the_tree("
+                    content_string += i 
+                    content_string += "," 
+                    content_string += j 
+                    content_string += " )'; class='"
+                    content_string += content_array[j].class;
+                    content_string += "'>";
+                    content_string += content_array[j].label;
+                    content_string += "</button></li>"
+                    
+                }
+                content_string += "</ul>";
+
+                container.insertAdjacentHTML("beforeend", "<tr><td>" + ToC[i].label + "</td><td>" + content_string + "</td></tr>");
+
+            }; 
+
+        };
+
+        function filter_the_tree(i,j){
+
+            empty_the_tree();
+
+            set_class_on_all_nodes("off");
+
+            ToC[i].content[j].class = "selected";
+
+            for(var c=i; c<ToC.length; c++){
+
+                get_children(c);
+
+            };
+
+            for(var p=i; p>=0; p--){
+
+                get_parents(p);
+
+            }; 
+
+            draw_the_data_tree();
+
+        };
+
+        function set_class_on_all_nodes(this_class){
+
+            for(var i=0; i<ToC.length; i++){
+
+                for(var j=0; j<ToC[i].content.length; j++){
+
+                    ToC[i].content[j].class = this_class;
+                    
+                }
+            }; 
+        };
+
+
+        function get_children(i){
+
+                if(i<ToC.length-1){
+
+                    var cousins = []; // two dimensional array of children arrays
+
+                    for(var c=0; c<ToC[i].content.length; c++){
+
+                        //Put the lists of children in an Array called cousins
+                        if(ToC[i].content[c].class==="selected" || ToC[i].content[c].class==="button"){
+                            cousins.push(ToC[i].content[c].children);
+                        };
+                    };
+
+                    var children = merge_array(cousins);
+
+                    i+=1;
+
+                    add_selected_to_toc(i, children);
+
+               }; //else { console.log("no offspring")};      
+        };
+
+        function get_parents(i){
+
+                if(i>0){
+
+                    var ancestors = []; // two dimensional array of parents arrays
+
+                    for(var p=0; p<ToC[i].content.length; p++){
+
+                        //Put the lists of parents in an Array called ancestors
+                        if(ToC[i].content[p].class==="selected" || ToC[i].content[p].class==="button"){
+                            ancestors.push(ToC[i].content[p].parents);
+                        };
+                    };
+
+                    var parents = merge_array(ancestors);
+
+                    i-=1;
+
+                    add_selected_to_toc(i, parents);
+
+                }; //else { console.log("no ancestors")};  
+        };
+
+        function merge_array(array_to_merge){ 
+
+            var merged = [];
+
+            for(var k=0; k<array_to_merge.length; k++) {
+                ///What's better than an embedded loop?
+                for(var l=0; l<array_to_merge[k].length; l++){
+
+                    merged.push(array_to_merge[k][l]);
+                };
+            };
+
+            merged = deduplicate_merged(merged);
+
+            return merged;
+
+        };
+
+        function deduplicate_merged(a) { 
+            /// Clever StackExchange ;)
+            return a.sort().filter(function(item, pos, ary) {
+                return !pos || item != ary[pos - 1];
+            });
+        };
+
+        function add_selected_to_toc(i,nodes){
+
+            //For each node on the list
+            for(var c=0; c<nodes.length; c++){
+
+                ToC[i].content[nodes[c]].class = "button";
+
+            };
+        };
+
+        ///////// RESTTING FUNCTIONS //////////
+
+        function empty_the_tree(){
+
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+        };
+
+        function reset_the_tree(){
+
+            empty_the_tree();
+            set_class_on_all_nodes("button");
+            draw_the_data_tree(); //unfiltered
+        };
+
+
+        /////////////// THE DATA /////////////
+
+
+        function toc_data(){
+
+            return [
+                
+                {
+                    "level":0,
+                    "label":"UK Government and programme goals",
+                    "content":[
+                        //0
+                        {"label":"More opportunities for marginalised groups",
+                        "parents":null,
+                        "children": [0],
+                        "class":"button"},
+                        //1
+                        {"label":"Higher rates of sustainable growth",
+                        "parents":null,
+                        "children": [0,1,2,3],
+                        "class":"button"},
+                        //2
+                        {"label":"Greater trade and investment flows",
+                        "parents":null,
+                        "children": [4],
+                        "class":"button"},
+                        //3
+                        {"label":"Reduced corruption through procurement reform",
+                        "parents":null,
+                        "children": [3,4],
+                        "class":"button"}
+
+                    ]
+
+                },
+
+                {
+                    "level":1,
+                    "label":"Benefit to partners",
+                    "content":[
+                        //0
+                        {"label":"Inclusive procurement",
+                        "parents":[0,1],
+                        "children": [0,1,2,3,4,5],
+                        "class":"button"},
+                        //1
+                        {"label":"Save money through procurement",
+                        "parents":[1],
+                        "children": [0,2,3,5,6],
+                        "class":"button"},
+                        //2
+                        {"label":"Better services",
+                        "parents":[1],
+                        "children": [2,3,5,7],
+                        "class":"button"},
+                        //3
+                        {"label":"Fewer opportunities for corruption",
+                        "parents":[1,3],
+                        "children": [0,1,4,6,7,8],
+                        "class":"button"},
+                        //4
+                        {"label":"Transparency",
+                        "parents":[2,3],
+                        "children": [0,1,7,8],
+                        "class":"button"}
+
+                    ]
+                },
+
+
+                {
+                    "level":2,
+                    "label":"Behaviour change",
+                    "content":[
+                        //0
+                        {"label":"Transactional procurement platforms are used",
+                        "parents":[0,1,3,4],
+                        "children": [0,1,2,11,12],
+                        "class":"button"},
+                        //1
+                        {"label":"Descriptions of work are not customised",
+                        "parents":[0,3,4],
+                        "children": [0,10],
+                        "class":"button"},
+                        //2
+                        {"label":"Standards are used",
+                        "parents":[0,1,2],
+                        "children": [0,1,3,4,6,7],
+                        "class":"button"},
+                        //3
+                        {"label":"Supplier inclusion is promoted",
+                        "parents":[0,1,2],
+                        "children": [0,5,6,8,9,10],
+                        "class":"button"},
+                        //4
+                        {"label":"Procurement laws and regulations are followed",
+                        "parents":[0,3],
+                        "children": [0,7,8,11],
+                        "class":"button"},
+                        //5
+                        {"label":"Better value-for-money suppliers are chosen",
+                        "parents":[0,1,2],
+                        "children": [0,4,5,6,7],
+                        "class":"button"},
+                        //6
+                        {"label":"Risks are flagged",
+                        "parents":[1,3],
+                        "children": [0,4,5,6],
+                        "class":"button"},
+                        //7
+                        {"label":"Data is published",
+                        "parents":[2,3,4],
+                        "children": [0,2,11,12],
+                        "class":"button"},
+                        //8
+                        {"label":"Manual data is automated",
+                        "parents":[3,4],
+                        "children": [0,2,11,12],
+                        "class":"button"}
+
+                    ]
+                },
+
+                {
+                    "level":3,
+                    "label":"Capability, opportunity and motivation change",
+                    "content":[
+                        //0
+                        {"label":"Leaders drive procurement reform",
+                        "parents":[0,1,2,3,4,5,6,7,8],
+                        "children": [0,1,2,3,4,5,6,8,9,11],
+                        "class":"button"},
+                        //1
+                        {"label":"Buyers recognise a need to improve processes",
+                        "parents":[0,2],
+                        "children": [0,1,2,3],
+                        "class":"button"},
+                        //2
+                        {"label":"Data publishing is valued and accepted as audit trail",
+                        "parents":[0,7,8],
+                        "children": [2,3,4],
+                        "class":"button"},
+                        //3
+                        {"label":"Standards are agreed and required",
+                        "parents":[2],
+                        "children": [0,1,3,8,15],
+                        "class":"button"},
+                        //4
+                        {"label":"Buyers can use the standards",
+                        "parents":[2,5,6],
+                        "children": [5,13,15],
+                        "class":"button"},
+                        //5
+                        {"label":"Buyers focus on outcomes",
+                        "parents":[3,5,6],
+                        "children": [2,5],
+                        "class":"button"},
+                        //6
+                        {"label":"Buyers can effectively choose suppliers understanding risks",
+                        "parents":[2,3,5,6],
+                        "children": [0,5,7],
+                        "class":"button"},
+                        //7
+                        {"label":"Purchases are audited",
+                        "parents":[2,4,5],
+                        "children": [8,10,11],
+                        "class":"button"},
+                        //8
+                        {"label":"Data is accessible to data users",
+                        "parents":[3,4],
+                        "children": [3,10],
+                        "class":"button"},
+                        //9
+                        {"label":"Opportunities are easy to find and have info to make informed decision for applying",
+                        "parents":[3],
+                        "children": [9,14],
+                        "class":"button"},
+                        //10
+                        {"label":"Procurement experts can develop user centered procurement documents",
+                        "parents":[1,3],
+                        "children": [6,9,12],
+                        "class":"button"},
+                        //11
+                        {"label":"A procurement platform that meets their needs is developed",
+                        "parents":[0,4,7,8],
+                        "children": [2,7,9,10,13,14],
+                        "class":"button"},
+                        //12
+                        {"label":"Tools and skills are available to build a platform",
+                        "parents":[0,7,8],
+                        "children": [3,4,6,9,11,13,14],
+                        "class":"button"}
+                    ]
+                },
+                {
+                    "level":4,
+                    "label":"GDMP Activities",
+                    "content":[
+                        //0
+                        {"label":"Build awareness: GESI in procurement",
+                        "parents":[0,1,3,6],
+                        "children": null,
+                        "class":"button"},
+                        //1
+                        {"label":"Build awareness: Standards and assurance",
+                        "parents":[0,1,3],
+                        "children": null,
+                        "class":"button"},
+                        //2
+                        {"label":"Build awareness: International lessons and best practice",
+                        "parents":[0,1,2,5,11],
+                        "children": null,
+                        "class":"button"},
+                        //3
+                        {"label":"Build awareness: Data standards (BODS, OCDS, UNSPSC)",
+                        "parents":[0,1,2,3,8,12],
+                        "children": null,
+                        "class":"button"},
+                        //4
+                        {"label":"Digital capability building",
+                        "parents":[0,2,12],
+                        "children": null,
+                        "class":"button"},
+                        //5
+                        {"label":"Procurement capability building",
+                        "parents":[0,4,5,6,10],
+                        "children": null,
+                        "class":"button"},
+                        //6
+                        {"label":"Support delivery: Frameworks",
+                        "parents":[0,10,12],
+                        "children": null,
+                        "class":"button"},
+                        //7
+                        {"label":"Support delivery: Tenders",
+                        "parents":[6,11],
+                        "children": null,
+                        "class":"button"},
+                        //8
+                        {"label":"Support delivery: Tech policy",
+                        "parents":[0,3,7],
+                        "children": null,
+                        "class":"button"},
+                        //9
+                        {"label":"Support delivery: Co-designed products",
+                        "parents":[0,9,10,11,12],
+                        "children": null,
+                        "class":"button"},
+                        //10
+                        {"label":"Support delivery: OCDS (platform providers)",
+                        "parents":[7,8,11],
+                        "children": null,
+                        "class":"button"},
+                        //11
+                        {"label":"Support delivery: Extensible systems (our proposed procurement journey)",
+                        "parents":[0,7,12],
+                        "children": null,
+                        "class":"button"},
+                        //12
+                        {"label":"Provide products/tools: Contract templates",
+                        "parents":[10],
+                        "children": null,
+                        "class":"button"},
+                        //13
+                        {"label":"Provide products/tools: Common components",
+                        "parents":[4,11,12],
+                        "children": null,
+                        "class":"button"},
+                        //14
+                        {"label":"Provide products/tools: Patterns for procurement platforms",
+                        "parents":[9,11,12],
+                        "children": null,
+                        "class":"button"},
+                        //15
+                        {"label":"Provide products/tools: Standards",
+                        "parents":[3,4],
+                        "children": null,
+                        "class":"button"},
+                    ]
+                }
+            ];
+        };
+
+        init();
+
+</script>
+
+
+
+
+
 {% endblock %}
